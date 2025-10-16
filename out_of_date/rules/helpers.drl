@@ -1,0 +1,17 @@
+package org.openmrs.module.drools.rules.labtests;
+
+import org.openmrs.Patient;
+import org.openmrs.Concept;
+import org.openmrs.Condition;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.drools.calculation.CalculationUtils
+
+declare PatientRecommendation
+    title : String
+    recommendation: String
+end
+
+function boolean hasCondition(Patient patient, String conditionRef) {
+    Concept concept = CalculationUtils.getConcept(conditionRef);
+    return Context.getConditionService().getActiveConditions(patient).stream().anyMatch(condition -> condition.getCondition().getCoded() != null && condition.getCondition().getCoded().equals(concept));
+}

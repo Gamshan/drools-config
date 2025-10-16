@@ -1,0 +1,27 @@
+{
+  "isEnabled": true,
+  "rules": [
+    {
+      "name": "Out of Date HbA1C",
+      "path": "rules/out_of_date_hbA1c.drl"
+    },
+    {
+      "name": "Helpers",
+      "path": "rules/helpers.drl"
+    }
+  ],
+  "sessionConfigs": [
+    {
+      "sessionId": "OOD_HbA1C",
+      "agendaGroup": "OOD_HbA1C",
+      "params": [
+        {
+          "name": "patient",
+          "type": "PATIENT_UUID",
+          "required": true
+        }
+      ],
+      "returnObjectsTypeClassName": "org.openmrs.module.patientflags.PatientFlag"
+    }
+  ]
+}

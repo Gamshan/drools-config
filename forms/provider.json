@@ -1,0 +1,21 @@
+{
+  "isEnabled": true,
+  "rules": [
+    {
+      "name": "MCH Form rules",
+      "path": "rules/mch_form_rules_table.drl.xlsx"
+    }
+  ],
+  "sessionConfigs": [
+    {
+      "sessionId": "Forms",
+      "agendaGroup": "forms",
+      "params": [{
+        "name": "patient",
+        "type": "PATIENT_UUID",
+        "required": true
+      }],
+      "returnObjectsTypeClassName": "org.openmrs.Form"
+    }
+  ]
+}

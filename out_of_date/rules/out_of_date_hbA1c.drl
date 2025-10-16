@@ -1,0 +1,21 @@
+package org.openmrs.module.drools.rules.labtests;
+
+import org.openmrs.Patient;
+import org.openmrs.module.drools.calculation.Operator;
+import static org.openmrs.module.drools.utils.DroolsDateUtils.yearsAgo;
+import org.openmrs.module.patientflags.PatientFlag
+
+
+rule "Out of Date HbA1C"
+    agenda-group "OOD_HbA1C"
+    when
+        $patient: Patient()
+        eval(hasCondition($patient, "CIEL:119481"))
+        eval(service.checkObs($patient, "CIEL:159644", Operator.GT, yearsAgo(1)).getObs() == null)
+    then
+    insert(new PatientFlag(
+                              $patient,
+                              null,
+                              "HbA1c Result is Outdated"
+                          ));
+end

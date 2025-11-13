@@ -1,0 +1,21 @@
+package org.openmrs.module.drools.rules.labtests;
+
+import org.openmrs.Patient;
+import org.openmrs.module.drools.calculation.Operator;
+import static org.openmrs.module.drools.utils.DroolsDateUtils.yearsAgo;
+
+
+rule "ACE Inhibitor"
+    agenda-group "ACE_INHIBITOR"
+    when
+        $patient: Patient()
+        eval(hasCondition2($patient, "CIEL:142473"))
+        eval(service.checkMostRecentObs($patient, "CIEL:164948", Operator.GT, 3.0))
+        eval(!hasOrder($patient, "CIEL:162298"))
+    then
+        insert(new PatientFlag(
+                                  $patient,
+                                  null,
+                                  "ACE Inhibitor"
+                              ));
+end

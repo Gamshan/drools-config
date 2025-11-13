@@ -1,0 +1,27 @@
+{
+  "isEnabled": true,
+  "rules": [
+    {
+      "name": "ACE Inhibitor",
+      "path": "rules/ace_inhibitor.drl"
+    },
+    {
+      "name": "Helpers",
+      "path": "rules/helpers.drl"
+    }
+  ],
+  "sessionConfigs": [
+    {
+      "sessionId": "ACE_INHIBITOR",
+      "agendaGroup": "ACE_INHIBITOR",
+      "params": [
+        {
+          "name": "patient",
+          "type": "PATIENT_UUID",
+          "required": true
+        }
+      ],
+      "returnObjectsTypeClassName": "org.openmrs.module.patientflags.PatientFlag"
+    }
+  ]
+}

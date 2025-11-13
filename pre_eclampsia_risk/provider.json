@@ -1,0 +1,27 @@
+{
+  "isEnabled": true,
+  "rules": [
+    {
+      "name": "Pre Eclampsia Risk",
+      "path": "rules/pre_eclampsia_risk.drl"
+    },
+    {
+      "name": "Helpers",
+      "path": "rules/helpers.drl"
+    }
+  ],
+  "sessionConfigs": [
+    {
+      "sessionId": "PreEclampsiaRisk",
+      "agendaGroup": "PreEclampsiaRisk",
+      "params": [
+        {
+          "name": "patient",
+          "type": "PATIENT_UUID",
+          "required": true
+        }
+      ],
+      "returnObjectsTypeClassName": "org.openmrs.module.patientflags.PatientFlag"
+    }
+  ]
+}

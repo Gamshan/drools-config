@@ -1,0 +1,65 @@
+package org.openmrs.module.drools.rules.labtests;
+
+import org.openmrs.Patient;
+import org.openmrs.Concept;
+import org.openmrs.Condition;
+import org.openmrs.Order;
+import org.openmrs.Obs;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.drools.calculation.CalculationUtils;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.*;
+import static org.openmrs.module.drools.calculation.CalculationUtils.splitValues;
+
+
+declare PatientRecommendation3
+    title : String
+    recommendation: String
+end
+
+function boolean hasCondition3(Patient patient, String conditionRef) {
+    Concept concept = CalculationUtils.getConcept(conditionRef);
+    return Context.getConditionService().getActiveConditions(patient).stream().anyMatch(condition -> condition.getCondition().getCoded() != null && condition.getCondition().getCoded().equals(concept));
+}
+
+function String handleKidneyDisease(Patient patient, String conditionRef) {
+      Concept concept = CalculationUtils.getConcept(conditionRef);
+      java.util.List<Obs> obsSubList = new ArrayList<Obs>();
+
+      List<Obs> obsList = Context.getObsService().getObservationsByPersonAndConcept(patient,concept);
+
+      if (obsList.size() >= 2) {
+            obsSubList = obsList.subList(obsList.size() - 2, obsList.size());
+
+            Double eGFR = calculate_eGFR(patient.getGender(), patient.getAge(), obsSubList.get(0).getValueNumeric());
+
+            String messageLessThan45 = "Reduced kidney function detected (eGFR < 45)";
+			String messageLessThan60 = "eGFR <60 on two occasions three months apart, suspect Chronic Kidney Disease (CKD).";
+
+			long diffMillis = Math.abs(obsSubList.get(0).getObsDatetime().getTime() - obsSubList.get(0).getObsDatetime().getTime());
+            long diffDays = diffMillis / (1000 * 60 * 60 * 24);
+
+            if(eGFR < 45)
+                return messageLessThan45;
+            else
+                return messageLessThan60;
+
+        }
+
+
+     return null;
+}
+
+
+
+function Double calculate_eGFR(String gender, Integer ageYears, Double serumCreatinineValue) {
+
+		return (Objects.equals(gender, "F") ?
+
+		142 * Math.pow(Math.min(serumCreatinineValue / 0.7, 1), -0.241)
+		        * Math.pow(Math.max(serumCreatinineValue / 0.7, 1), -1.200) * Math.pow(0.9938, ageYears) * 1.012 : 142
+		        * Math.pow(Math.min(serumCreatinineValue / 0.9, 1), -0.302)
+		        * Math.pow(Math.max(serumCreatinineValue / 0.9, 1), -1.200) * Math.pow(0.9938, ageYears));
+}
+

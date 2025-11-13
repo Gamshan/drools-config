@@ -1,0 +1,26 @@
+package org.openmrs.module.drools.rules.labtests;
+
+import org.openmrs.Patient;
+import org.openmrs.module.drools.calculation.Operator;
+import static org.openmrs.module.drools.utils.DroolsDateUtils.yearsAgo;
+import org.openmrs.module.patientflags.PatientFlag
+import org.openmrs.Order;
+import java.util.List;
+
+
+rule "Pre Eclampsia Risk"
+    agenda-group "PreEclampsiaRisk"
+    when
+        $patient: Patient()
+        eval(isGestationalAgeAtLeast12Weeks($patient,"CIEL:1427"))
+        eval(hasAnyRiskFactors($patient,service))
+        eval(hasActiveCondition($patient, "CIEL:1427"))
+        eval(hasActiveCondition($patient, "CIEL:1427"))
+        eval(hasActiveMedication($patient, "CIEL:1427"))
+    then
+        insert(new PatientFlag(
+                                  $patient,
+                                  null,
+                                  "Pre eclampsia risk"
+                              ));
+end

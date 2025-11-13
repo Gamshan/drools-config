@@ -1,0 +1,95 @@
+package org.openmrs.module.drools.rules.labtests;
+
+import org.openmrs.Patient;
+import org.openmrs.Concept;
+import org.openmrs.Condition;
+import org.openmrs.Order;
+import org.openmrs.Obs;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.drools.calculation.CalculationUtils;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.*;
+import static org.openmrs.module.drools.calculation.CalculationUtils.splitValues;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.time.ZoneId;
+import java.util.Date;
+import org.openmrs.module.drools.calculation.Operator;
+import static org.openmrs.module.drools.utils.DroolsDateUtils.yearsAgo;
+import org.openmrs.module.drools.calculation.DroolsCalculationService
+
+function boolean hasCondition4(Patient patient, String conditionRef) {
+    Concept concept = CalculationUtils.getConcept(conditionRef);
+    return Context.getConditionService().getActiveConditions(patient).stream().anyMatch(condition -> condition.getCondition().getCoded() != null && condition.getCondition().getCoded().equals(concept));
+}
+
+function boolean hasActiveCondition(Patient patient, String conditionRef) {
+
+            return true;
+}
+
+
+function boolean hasActiveMedication(Patient patient, String conditionRef) {
+
+            return true;
+}
+
+function boolean hasAnyRiskFactors(Patient patient, org.openmrs.module.drools.calculation.DroolsCalculationService service){
+  boolean isFetusesMoreThanTwo = hasFetusesMoreThanTwo();
+  boolean pastPreEclampsia = hasActiveObs(patient,"CIEL:160654",service);
+  boolean pastEclampsia = hasActiveObs(patient,"CIEL:160655",service);
+
+  boolean pastConvulsions = hasActiveObs(patient,"CIEL:160655",service);
+
+
+  boolean hasDiabetes = hasActiveObs(patient,"CIEL:119481",service);
+  boolean hasHypertension = hasActiveObs(patient,"CIEL:117399",service);
+  boolean hasKidneyDisease = hasActiveObs(patient,"CIEL:165570",service);
+  boolean hasAutoimmuneDisease = hasActiveObs(patient,"CIEL:112476",service);
+
+  return isFetusesMoreThanTwo || pastPreEclampsia || pastEclampsia || pastConvulsions
+          || hasAutoimmuneDisease || hasDiabetes || hasHypertension || hasKidneyDisease;
+}
+
+function boolean hasActiveObs(Patient patient, String conditionRef,org.openmrs.module.drools.calculation.DroolsCalculationService service){
+    boolean exists = service.checkMostRecentObs(patient, conditionRef, Operator.EXISTS, null);
+    System.out.println("JJJJ" + exists  );
+    return exists;
+}
+
+
+function boolean hasFetusesMoreThanTwo(){
+  return true;
+}
+
+
+
+
+function boolean isGestationalAgeAtLeast12Weeks(Patient patient, String conditionRef) {
+   Concept concept = CalculationUtils.getConcept(conditionRef);
+
+   if(concept == null)
+      return false;
+
+    List<Obs> obsList = Context.getObsService().getObservationsByPersonAndConcept(patient,concept);
+
+    if(obsList.size() <= 0 || obsList.get(0).getValueDatetime() == null)
+      return false;
+
+
+    LocalDate lmpDate = obsList.get(0).getValueDatetime().toInstant()
+                                        .atZone(ZoneId.systemDefault())
+                                        .toLocalDate();
+
+    if (lmpDate == null || lmpDate.isAfter(LocalDate.now()))
+      return false;
+
+    long daysBetween = ChronoUnit.DAYS.between(lmpDate, LocalDate.now());
+    long weeks = daysBetween / 7;
+   System.out.println("Hello 555" + lmpDate);
+    System.out.println("Hello" + weeks);
+  return weeks >= 0;
+
+}
+

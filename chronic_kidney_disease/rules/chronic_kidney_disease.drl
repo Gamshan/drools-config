@@ -1,0 +1,22 @@
+package org.openmrs.module.drools.rules.labtests;
+
+import org.openmrs.Patient;
+import org.openmrs.module.drools.calculation.Operator;
+import static org.openmrs.module.drools.utils.DroolsDateUtils.yearsAgo;
+import org.openmrs.module.patientflags.PatientFlag
+import org.openmrs.Order;
+import java.util.List;
+
+
+rule "Chronic Kidney Disease"
+    agenda-group "ChronicKidneyDisease"
+    when
+        $patient: Patient()
+        eval(handleKidneyDisease($patient,"CIEL:790"))
+    then
+        insert(new PatientFlag(
+                                  $patient,
+                                  null,
+                                  "Chronic Kidney Disease"
+                              ));
+end

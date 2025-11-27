@@ -25,22 +25,34 @@ function boolean hasCondition4(Patient patient, String conditionRef) {
 }
 
 function boolean hasActiveCondition(Patient patient, String conditionRef) {
+    Concept concept = CalculationUtils.getConcept(conditionRef);
 
-            return true;
+    if(concept == null)
+      return false;
+
+   return Context.getConditionService().getActiveConditions(patient).stream().anyMatch(condition -> condition.getCondition().getCoded() != null && condition.getCondition().getCoded().equals(concept));
 }
 
 
-function boolean hasActiveMedication(Patient patient, String conditionRef) {
+function boolean hasActiveEclampsiaCondition(Patient patient) {
+            return hasActiveCondition(patient, "CIEL:118744") ||  hasActiveCondition(patient,"CIEL:129251");
+}
 
-            return true;
+function boolean hasActiveOrder(Patient patient, String conditionRef){
+     Concept concept = CalculationUtils.getConcept(conditionRef);
+
+      if(concept == null)
+           return false;
+
+        return Context.getOrderService().getAllOrdersByPatient(patient).stream().anyMatch(order -> {
+             return order.getConcept() != null && order.isActive() && order.getConcept().equals(concept);
+        });
 }
 
 function boolean hasAnyRiskFactors(Patient patient, org.openmrs.module.drools.calculation.DroolsCalculationService service){
-  boolean isFetusesMoreThanTwo = hasFetusesMoreThanTwo();
+  boolean isFetusesMoreThanOne = hasFetusesMoreThanOne(patient,"CIEL:165387",service);
   boolean pastPreEclampsia = hasActiveObs(patient,"CIEL:160654",service);
   boolean pastEclampsia = hasActiveObs(patient,"CIEL:160655",service);
-
-  boolean pastConvulsions = hasActiveObs(patient,"CIEL:160655",service);
 
 
   boolean hasDiabetes = hasActiveObs(patient,"CIEL:119481",service);
@@ -48,7 +60,7 @@ function boolean hasAnyRiskFactors(Patient patient, org.openmrs.module.drools.ca
   boolean hasKidneyDisease = hasActiveObs(patient,"CIEL:165570",service);
   boolean hasAutoimmuneDisease = hasActiveObs(patient,"CIEL:112476",service);
 
-  return isFetusesMoreThanTwo || pastPreEclampsia || pastEclampsia || pastConvulsions
+  return isFetusesMoreThanOne || pastPreEclampsia || pastEclampsia
           || hasAutoimmuneDisease || hasDiabetes || hasHypertension || hasKidneyDisease;
 }
 
@@ -59,8 +71,10 @@ function boolean hasActiveObs(Patient patient, String conditionRef,org.openmrs.m
 }
 
 
-function boolean hasFetusesMoreThanTwo(){
-  return true;
+function boolean hasFetusesMoreThanOne(Patient patient, String conditionRef, org.openmrs.module.drools.calculation.DroolsCalculationService service){
+    boolean exists = service.checkMostRecentObs(patient, conditionRef, Operator.GTE, 2.0);
+    System.out.println("JJJJ" + exists  );
+    return true;
 }
 
 
@@ -89,7 +103,7 @@ function boolean isGestationalAgeAtLeast12Weeks(Patient patient, String conditio
     long weeks = daysBetween / 7;
    System.out.println("Hello 555" + lmpDate);
     System.out.println("Hello" + weeks);
-  return weeks >= 0;
+  return weeks >= 12;
 
 }
 

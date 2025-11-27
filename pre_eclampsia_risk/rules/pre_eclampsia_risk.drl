@@ -14,9 +14,8 @@ rule "Pre Eclampsia Risk"
         $patient: Patient()
         eval(isGestationalAgeAtLeast12Weeks($patient,"CIEL:1427"))
         eval(hasAnyRiskFactors($patient,service))
-        eval(hasActiveCondition($patient, "CIEL:1427"))
-        eval(hasActiveCondition($patient, "CIEL:1427"))
-        eval(hasActiveMedication($patient, "CIEL:1427"))
+        eval(!hasActiveEclampsiaCondition($patient))
+        eval(!hasActiveOrder($patient, "CIEL:71617"))
     then
         insert(new PatientFlag(
                                   $patient,

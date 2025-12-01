@@ -8,15 +8,30 @@ import org.openmrs.Order;
 import java.util.List;
 
 
-rule "Chronic Kidney Disease"
-    agenda-group "ChronicKidneyDisease"
+rule "Reduced Kidney Function"
+    agenda-group "ReducedKidneyFunction"
+    salience 10
     when
         $patient: Patient()
-        eval(handleKidneyDisease($patient,"CIEL:790"))
+        eval(handleKidneyDisease($patient,"CIEL:790", 0.0, 45.0))
     then
         insert(new PatientFlag(
                                   $patient,
                                   null,
-                                  "Chronic Kidney Disease"
+                                  "Reduced kidney function detected (eGFR < 45)"
+                              ));
+end
+
+rule "Chronic Kidney Disease"
+    agenda-group "ChronicKidneyDisease"
+    salience 0
+    when
+        $patient: Patient()
+        eval(handleKidneyDisease($patient,"CIEL:790", 45.0, 60.0))
+    then
+        insert(new PatientFlag(
+                                  $patient,
+                                  null,
+                                  "eGFR <60 on two occasions three months apart, suspect Chronic Kidney Disease (CKD)."
                               ));
 end

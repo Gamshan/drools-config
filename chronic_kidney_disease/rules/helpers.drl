@@ -23,34 +23,42 @@ function boolean hasCondition3(Patient patient, String conditionRef) {
     return Context.getConditionService().getActiveConditions(patient).stream().anyMatch(condition -> condition.getCondition().getCoded() != null && condition.getCondition().getCoded().equals(concept));
 }
 
-function String handleKidneyDisease(Patient patient, String conditionRef) {
+function boolean handleKidneyDisease(Patient patient, String conditionRef, Double lowMargin, Double highMargin) {
       Concept concept = CalculationUtils.getConcept(conditionRef);
       java.util.List<Obs> obsSubList = new ArrayList<Obs>();
 
       List<Obs> obsList = Context.getObsService().getObservationsByPersonAndConcept(patient,concept);
+                  for (int i = 0; i < obsList.size(); i++) {
+                   Double eGFR = calculate_eGFR(patient.getGender(), patient.getAge(), obsList.get(i).getValueNumeric());
 
-      if (obsList.size() >= 2) {
-            obsSubList = obsList.subList(obsList.size() - 2, obsList.size());
 
-            Double eGFR = calculate_eGFR(patient.getGender(), patient.getAge(), obsSubList.get(0).getValueNumeric());
+                  System.out.println("eGFR => " + eGFR);
 
-            String messageLessThan45 = "Reduced kidney function detected (eGFR < 45)";
-			String messageLessThan60 = "eGFR <60 on two occasions three months apart, suspect Chronic Kidney Disease (CKD).";
+                   if (eGFR < 60) {
+                         for (int j = i + 1; j < obsList.size(); j++) {
+                              Double eGFR2 = calculate_eGFR(patient.getGender(), patient.getAge(), obsList.get(j).getValueNumeric());
+                              long differenceInMonths = differenceDates(obsList.get(i).getObsDatetime(), obsList.get(j).getObsDatetime(), "MONTHS");
 
-			long diffMillis = Math.abs(obsSubList.get(0).getObsDatetime().getTime() - obsSubList.get(0).getObsDatetime().getTime());
-            long diffDays = diffMillis / (1000 * 60 * 60 * 24);
+                              System.out.println("eGFR2 => " + eGFR2);
 
-            if(eGFR < 45)
-                return messageLessThan45;
-            else
-                return messageLessThan60;
+                               if(eGFR2 < 60 && differenceInMonths <= 3)
+                                  return (lowMargin <= eGFR &&  eGFR < highMargin) || (lowMargin <= eGFR2 && eGFR2 < highMargin);
 
+                         }
+                   }
         }
 
 
-     return null;
+     return false;
 }
 
+function long differenceDates(Date date1, Date date2, String type){
+    long diffMs = date1.getTime() - date2.getTime();
+    long diffDays = diffMs / (1000 * 60 * 60 * 24);
+    if(type == "DAYS")
+        return diffDays;
+    return diffDays / 30;
+}
 
 
 function Double calculate_eGFR(String gender, Integer ageYears, Double serumCreatinineValue) {

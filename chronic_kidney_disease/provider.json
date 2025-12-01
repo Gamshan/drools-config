@@ -6,6 +6,10 @@
       "path": "rules/chronic_kidney_disease.drl"
     },
     {
+      "name": "Reduced Kidney Function",
+      "path": "rules/chronic_kidney_disease.drl"
+    },
+    {
       "name": "Helpers",
       "path": "rules/helpers.drl"
     }
@@ -14,6 +18,18 @@
     {
       "sessionId": "ChronicKidneyDisease",
       "agendaGroup": "ChronicKidneyDisease",
+      "params": [
+        {
+          "name": "patient",
+          "type": "PATIENT_UUID",
+          "required": true
+        }
+      ],
+      "returnObjectsTypeClassName": "org.openmrs.module.patientflags.PatientFlag"
+    },
+    {
+      "sessionId": "ReducedKidneyFunction",
+      "agendaGroup": "ReducedKidneyFunction",
       "params": [
         {
           "name": "patient",

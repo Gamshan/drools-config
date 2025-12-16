@@ -13,6 +13,7 @@ rule "Reduced Kidney Function"
     salience 10
     when
         $patient: Patient()
+        eval(!hasCondition3($patient, "CIEL:145438"))
         eval(handleKidneyDisease($patient,"CIEL:790", 0.0, 45.0))
     then
         insert(new PatientFlag(
